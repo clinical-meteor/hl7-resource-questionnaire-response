@@ -1,6 +1,6 @@
 Package.describe({
   name: 'clinical:hl7-resource-questionnaire-response',
-  version: '1.2.2',
+  version: '1.2.3',
   summary: 'HL7 FHIR Resource - Questionnaire Response',
   git: 'https://github.com/clinical-meteor/hl7-resource-questionnaire-response',
   documentation: 'README.md'
@@ -12,13 +12,25 @@ Package.onUse(function (api) {
   api.use('meteor-platform');
   api.use('mongo');
   api.use('aldeed:simple-schema@1.3.3');
-  api.use('aldeed:collection2@2.5.0');
   api.use('simple:json-routes@2.1.0');
+  api.use('momentjs:moment@2.17.1');
+  api.use('ecmascript@0.9.0');
+  api.use('session');
+  api.use('http');
+  api.use('react-meteor-data@0.2.15');
 
+  api.use('clinical:glass-ui@2.2.1');
+  api.use('clinical:extended-api@2.2.2');
   api.use('clinical:base-model@1.3.5');
+  api.use('clinical:user-model@1.5.0');
   api.use('clinical:hl7-resource-datatypes@3.0.0');
+  api.use('clinical:hl7-resource-bundle@1.3.10');
+  api.use('matb33:collection-hooks@0.7.15');
+  api.use('clinical:alert@2.1.3');
+  
 
-  api.addFiles('lib/hl7-resource-questionnaire-response.js');
+  api.addFiles('lib/QuestionnaireResponses.js');
+  
   api.addFiles('server/rest.js', 'server');
   api.addFiles('server/initialize.js', 'server');
 
@@ -29,4 +41,6 @@ Package.onUse(function (api) {
   api.export('QuestionnaireResponse');
   api.export('QuestionnaireResponses');
   api.export('QuestionnaireResponseSchema');
+
+  api.mainModule('index.jsx', 'client');
 });
