@@ -8,32 +8,29 @@ import { Table } from 'react-bootstrap';
 import { Session } from 'meteor/session';
 import { has, get } from 'lodash';
 import { TableNoData } from 'meteor/clinical:glass-ui'
-
+import PropTypes from 'prop-types';
 
 flattenQuestionnaireResponse = function(questionnaireResponse){
   let result = {
     _id: questionnaireResponse._id,
-    id: questionnaireResponse.id,
-    active: questionnaireResponse.active.toString(),
-    gender: questionnaireResponse.gender,
-    name: '',
-    mrn: '',
-    birthDate: '',
-    photo: "/thumbnail-blank.png",
-    initials: 'abc'
+    title: '',
+    identifier: '',
+    questionnaire: '',
+    status: '',
+    subject: '',
+    encounter: '',
+    author: '',
+    date: ''
   };
+
 
   // there's an off-by-1 error between momment() and Date() that we want
   // to account for when converting back to a string
-  result.birthDate = moment(questionnaireResponse.birthDate).add(1, 'days').format("YYYY-MM-DD")
-  result.photo = get(questionnaireResponse, 'photo[0].url', '');
-  result.mrn = get(questionnaireResponse, 'identifier[0].value', '');
-
-  if(has(questionnaireResponse, 'name[0].text')){
-    result.name = get(questionnaireResponse, 'name[0].text');    
-  } else {
-    result.name = get(questionnaireResponse, 'name[0].given[0]') + ' ' + get(questionnaireResponse, 'name[0].family[0]');
-  }
+  result.date = moment(questionnaireResponse.authored).add(1, 'days').format("YYYY-MM-DD")
+  result.encounter = get(questionnaireResponse, 'encounter.reference', '');
+  result.subject = get(questionnaireResponse, 'subject.reference', '');
+  result.author = get(questionnaireResponse, 'author.reference', '');
+  result.identifier = get(questionnaireResponse, 'identifier[0].value', '');
 
   return result;
 }
@@ -98,18 +95,6 @@ export class QuestionnaireResponseTable extends React.Component {
     }
 
 
-    if (Session.get('appWidth') < 768) {
-      data.style.hideOnPhone.visibility = 'hidden';
-      data.style.hideOnPhone.display = 'none';
-      data.style.cellHideOnPhone.visibility = 'hidden';
-      data.style.cellHideOnPhone.display = 'none';
-    } else {
-      data.style.hideOnPhone.visibility = 'visible';
-      data.style.hideOnPhone.display = 'table-cell';
-      data.style.cellHideOnPhone.visibility = 'visible';
-      data.style.cellHideOnPhone.display = 'table-cell';
-    }
-
     // console.log("QuestionnaireResponseTable[data]", data);
     return data;
   }
@@ -129,7 +114,7 @@ export class QuestionnaireResponseTable extends React.Component {
     }
   }
   renderRowAvatar(patient, avatarStyle){
-    console.log('renderRowAvatar', patient, avatarStyle)
+    // console.log('renderRowAvatar', patient, avatarStyle)
     if (get(Meteor, 'settings.public.defaults.avatars') && (this.props.showAvatars === true)) {
       return (
         <td className='avatar'>
@@ -190,17 +175,13 @@ export class QuestionnaireResponseTable extends React.Component {
         tableRows.push(
           <tr key={i} className="patientRow" style={{cursor: "pointer"}} onClick={this.selectQuestionnaireResponseRow.bind(this, this.data.patients[i].id )} >
   
-            { this.renderRowAvatar(this.data.patients[i], this.data.style.avatar) }
-  
-            <td className='name' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={this.data.style.cell}>{this.data.patients[i].name }</td>
+            <td className='identifier' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={this.data.style.cell}>{this.data.patients[i].identifier }</td>
             <td className='title' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={this.data.style.cell}>{this.data.patients[i].title }</td>
+            <td className='questionnaire' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={this.data.style.cell}>{this.data.patients[i].questionnaire }</td>
+            <td className='encounter' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={this.data.style.cell}>{this.data.patients[i].encounter }</td>
+            <td className='subject' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={this.data.style.cell}>{this.data.patients[i].subject }</td>
             <td className='status' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={this.data.style.cell}>{this.data.patients[i].status }</td>
-            <td className='approvalDate' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={{minWidth: '100px', paddingTop: '16px'}}>{this.data.patients[i].birthDate }</td>
-            <td className='purpose' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={this.data.style.cellHideOnPhone}>{this.data.patients[i].purpose}</td>
-            <td className='code' style={this.data.style.cellHideOnPhone}>{this.data.patients[i].code}</td>
-            <td className='id' onClick={ this.rowClick.bind('this', this.data.patients[i].id)} style={this.data.style.cellHideOnPhone}><span className="barcode">{this.data.patients[i].id}</span></td>            
-
-              { this.renderSendButton(this.data.patients[i], this.data.style.avatar) }
+            <td className='date' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={{minWidth: '100px', paddingTop: '16px'}}>{this.data.patients[i].date }</td>
           </tr>
         );
       }
@@ -213,17 +194,14 @@ export class QuestionnaireResponseTable extends React.Component {
         <Table id='patientsTable' hover >
           <thead>
             <tr>
-              { this.renderRowAvatarHeader() }
-
-              <th className='title'>title</th>
-              <th className='name'>name</th>
-              <th className='status'>status</th>
-              <th className='approvalDate' style={{minWidth: '100px'}}>approval date</th>
-              <th className='purpose' style={this.data.style.hideOnPhone}>purpose</th>
-              <th className='code' style={this.data.style.hideOnPhone}>code</th>
-              <th className='id' style={this.data.style.hideOnPhone}>_id</th>
-
-              { this.renderSendButtonHeader() }
+              <th className='identifier'>Identifier</th>
+              <th className='title'>Title</th>
+              <th className='questionnaire'>Questionnaire</th>
+              <th className='subject'>Subject</th>
+              <th className='author'>Author</th>
+              <th className='encounter'>Encounter</th>
+              <th className='status'>Status</th>
+              <th className='date' style={{minWidth: '100px'}}>Date</th>
             </tr>
           </thead>
           <tbody>

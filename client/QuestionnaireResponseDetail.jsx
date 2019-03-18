@@ -1,18 +1,11 @@
-import { CardActions, CardText } from 'material-ui/Card';
-import { get, has, set } from 'lodash';
-// import { insertQuestionnaireResponse, removeQuestionnaireResponseById, updateQuestionnaireResponse } from '/imports/ui/workflows/questionnaireResponses/methods';
-// import { insertQuestionnaireResponse, removeQuestionnaireResponseById, updateQuestionnaireResponse } from 'meteor/clinical:hl7-resource-questionnaireResponse';
-import { insertQuestionnaireResponse, removeQuestionnaireResponseById, updateQuestionnaireResponse } from 'meteor/clinical:hl7-resource-questionnaire-response';
-
+import { CardActions, CardText, RaisedButton, TextField } from 'material-ui';
+import { get } from 'lodash';
 
 import { Bert } from 'meteor/clinical:alert';
-import RaisedButton from 'material-ui/RaisedButton';
 import React from 'react';
 import { ReactMeteorData } from 'meteor/react-meteor-data';
 import ReactMixin from 'react-mixin';
-import TextField from 'material-ui/TextField';
 
-import { QuestionnaireResponses } from '../lib/QuestionnaireResponses';
 import { Session } from 'meteor/session';
 
 
@@ -23,7 +16,7 @@ let defaultQuestionnaireResponse = {
 Session.setDefault('questionnaireResponseUpsert', false);
 Session.setDefault('selectedQuestionnaireResponse', false);
 
-export default class QuestionnaireResponseDetail extends React.Component {
+export class QuestionnaireResponseDetail extends React.Component {
   getMeteorData() {
     let data = {
       questionnaireResponseId: false,
@@ -60,7 +53,7 @@ export default class QuestionnaireResponseDetail extends React.Component {
     return (
       <div id={this.props.id} className="questionnaireResponseDetail">
         <CardText>
-          <TextField
+          {/* <TextField
             id='nameInput'
             ref='name'
             name='name'
@@ -107,7 +100,7 @@ export default class QuestionnaireResponseDetail extends React.Component {
             value={ get(this, 'data.questionnaireResponse.identifier[0].value', '')}
             onChange={ this.changeState.bind(this, 'mrn')}
             fullWidth
-            /><br/>
+            /><br/> */}
         </CardText>
         <CardActions>
           { this.determineButtons(this.data.questionnaireResponseId) }
@@ -251,3 +244,4 @@ export default class QuestionnaireResponseDetail extends React.Component {
 
 
 ReactMixin(QuestionnaireResponseDetail.prototype, ReactMeteorData);
+export default QuestionnaireResponseDetail;

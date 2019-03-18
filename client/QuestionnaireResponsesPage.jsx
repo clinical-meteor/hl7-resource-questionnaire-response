@@ -1,4 +1,4 @@
-import { CardText, CardTitle } from 'material-ui/Card';
+import { CardText, CardTitle } from 'material-ui';
 import { Tab, Tabs } from 'material-ui/Tabs';
 import { Glass, GlassCard, VerticalCanvas } from 'meteor/clinical:glass-ui';
 
@@ -7,9 +7,8 @@ import QuestionnaireResponseTable from './QuestionnaireResponseTable';
 import React from 'react';
 import { ReactMeteorData } from 'meteor/react-meteor-data';
 import ReactMixin from 'react-mixin';
-//import { VerticalCanvas } from './VerticalCanvas';
 
-// import { QuestionnaireResponses } from '../lib/QuestionnaireResponses';
+
 import { Session } from 'meteor/session';
 
 let defaultQuestionnaireResponse = {
@@ -68,7 +67,7 @@ export class QuestionnaireResponsesPage extends React.Component {
   }
 
   render() {
-    console.log('React.version: ' + React.version);
+    // console.log('React.version: ' + React.version);
     return (
       <div id="questionnaireResponsesPage">
         <VerticalCanvas>
@@ -79,13 +78,13 @@ export class QuestionnaireResponsesPage extends React.Component {
             <CardText>
               <Tabs id='questionnaireResponsesPageTabs' default value={this.data.tabIndex} onChange={this.handleTabChange} initialSelectedIndex={1}>
                  <Tab className="newQuestionnaireResponseTab" label='New' style={this.data.style.tab} onActive={ this.onNewTab } value={0}>
-                   {/* <QuestionnaireResponseDetail id='newQuestionnaireResponse' /> */}
+                   <QuestionnaireResponseDetail id='newQuestionnaireResponse' />
                  </Tab>
                  <Tab className="questionnaireResponseListTab" label='QuestionnaireResponses' onActive={this.handleActive} style={this.data.style.tab} value={1}>
                    <QuestionnaireResponseTable showBarcodes={true} showAvatars={true} />
                  </Tab>
                  <Tab className="questionnaireResponseDetailTab" label='Detail' onActive={this.handleActive} style={this.data.style.tab} value={2}>
-                   {/* <QuestionnaireResponseDetail id='questionnaireResponseDetails' currentQuestionnaireResponse={this.data.currentQuestionnaireResponse} /> */}
+                   <QuestionnaireResponseDetail id='questionnaireResponseDetails' currentQuestionnaireResponse={this.data.currentQuestionnaireResponse} />
                  </Tab>
              </Tabs>
 
@@ -99,7 +98,5 @@ export class QuestionnaireResponsesPage extends React.Component {
 }
 
 
-
 ReactMixin(QuestionnaireResponsesPage.prototype, ReactMeteorData);
-
 export default QuestionnaireResponsesPage;
