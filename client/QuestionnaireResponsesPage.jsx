@@ -35,6 +35,7 @@ export class QuestionnaireResponsesPage extends React.Component {
       },
       tabIndex: Session.get('questionnaireResponsePageTabIndex'),
       questionnaireResponse: defaultQuestionnaireResponse,
+      questionnaireResponseId: Session.get('selectedQuestionnaireResponse'),
       questionnaireResponseSearchFilter: '',
       currentQuestionnaireResponse: null
     };
@@ -46,14 +47,15 @@ export class QuestionnaireResponsesPage extends React.Component {
       data.questionnaireResponseSearchFilter = Session.get('questionnaireResponseSearchFilter');
     }
     if (Session.get("selectedQuestionnaireResponse")) {
-      data.currentQuestionnaireResponse = Session.get("selectedQuestionnaireResponse");
+      data.currentQuestionnaireResponse = QuestionnaireResponses.findOne(Session.get("selectedQuestionnaireResponse"));
     }
 
     data.style = Glass.blur(data.style);
     data.style.appbar = Glass.darkroom(data.style.appbar);
     data.style.tab = Glass.darkroom(data.style.tab);
 
-    if(process.env.NODE_ENV === "test") console.log("QuestionnaireResponsesPage[data]", data);
+    //if(process.env.NODE_ENV === "test") 
+    console.log("QuestionnaireResponsesPage[data]", data);
     return data;
   }
 
@@ -81,10 +83,20 @@ export class QuestionnaireResponsesPage extends React.Component {
                    <QuestionnaireResponseDetail id='newQuestionnaireResponse' />
                  </Tab>
                  <Tab className="questionnaireResponseListTab" label='QuestionnaireResponses' onActive={this.handleActive} style={this.data.style.tab} value={1}>
-                   <QuestionnaireResponseTable showBarcodes={true} showAvatars={true} />
+                   <QuestionnaireResponseTable 
+                    showBarcodes={true} 
+                    showAvatars={true} 
+                    onRowClick={function(responseId){
+                      console.log('responseId', responseId)
+                      Session.set('selectedQuestionnaireResponse', responseId)
+                      Session.set('questionnaireResponsePageTabIndex', 2)
+                    }}
+                    />
                  </Tab>
                  <Tab className="questionnaireResponseDetailTab" label='Detail' onActive={this.handleActive} style={this.data.style.tab} value={2}>
-                   <QuestionnaireResponseDetail id='questionnaireResponseDetails' currentQuestionnaireResponse={this.data.currentQuestionnaireResponse} />
+                   <QuestionnaireResponseDetail 
+                    id='questionnaireResponseDetails' 
+                    currentQuestionnaireResponse={this.data.currentQuestionnaireResponse} />
                  </Tab>
              </Tabs>
 

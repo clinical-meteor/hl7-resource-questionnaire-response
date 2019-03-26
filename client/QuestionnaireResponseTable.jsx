@@ -27,10 +27,12 @@ flattenQuestionnaireResponse = function(questionnaireResponse){
   // there's an off-by-1 error between momment() and Date() that we want
   // to account for when converting back to a string
   result.date = moment(questionnaireResponse.authored).add(1, 'days').format("YYYY-MM-DD")
+  result.questionnaire = get(questionnaireResponse, 'questionnaire.reference', '');
   result.encounter = get(questionnaireResponse, 'encounter.reference', '');
   result.subject = get(questionnaireResponse, 'subject.reference', '');
   result.author = get(questionnaireResponse, 'author.reference', '');
   result.identifier = get(questionnaireResponse, 'identifier[0].value', '');
+  result.status = get(questionnaireResponse, 'status', '');
 
   return result;
 }
@@ -159,9 +161,9 @@ export class QuestionnaireResponseTable extends React.Component {
       }
     });
   }
-  selectQuestionnaireResponseRow(patientId){
+  selectQuestionnaireResponseRow(responseId){
     if(typeof(this.props.onRowClick) === "function"){
-      this.props.onRowClick(patientId);
+      this.props.onRowClick(responseId);
     }
   }
   render () {
@@ -173,12 +175,12 @@ export class QuestionnaireResponseTable extends React.Component {
     } else {
       for (var i = 0; i < this.data.patients.length; i++) {
         tableRows.push(
-          <tr key={i} className="patientRow" style={{cursor: "pointer"}} onClick={this.selectQuestionnaireResponseRow.bind(this, this.data.patients[i].id )} >
+          <tr key={i} className="patientRow" style={{cursor: "pointer"}} onClick={this.selectQuestionnaireResponseRow.bind(this, this.data.patients[i]._id )} >
   
             <td className='identifier' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={this.data.style.cell}>{this.data.patients[i].identifier }</td>
-            <td className='title' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={this.data.style.cell}>{this.data.patients[i].title }</td>
+            {/* <td className='title' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={this.data.style.cell}>{this.data.patients[i].title }</td> */}
             <td className='questionnaire' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={this.data.style.cell}>{this.data.patients[i].questionnaire }</td>
-            <td className='encounter' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={this.data.style.cell}>{this.data.patients[i].encounter }</td>
+            {/* <td className='encounter' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={this.data.style.cell}>{this.data.patients[i].encounter }</td> */}
             <td className='subject' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={this.data.style.cell}>{this.data.patients[i].subject }</td>
             <td className='status' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={this.data.style.cell}>{this.data.patients[i].status }</td>
             <td className='date' onClick={ this.rowClick.bind('this', this.data.patients[i]._id)} style={{minWidth: '100px', paddingTop: '16px'}}>{this.data.patients[i].date }</td>
@@ -195,11 +197,11 @@ export class QuestionnaireResponseTable extends React.Component {
           <thead>
             <tr>
               <th className='identifier'>Identifier</th>
-              <th className='title'>Title</th>
+              {/* <th className='title'>Title</th> */}
+              {/* <th className='author'>Author</th> */}
               <th className='questionnaire'>Questionnaire</th>
+              {/* <th className='encounter'>Encounter</th> */}
               <th className='subject'>Subject</th>
-              <th className='author'>Author</th>
-              <th className='encounter'>Encounter</th>
               <th className='status'>Status</th>
               <th className='date' style={{minWidth: '100px'}}>Date</th>
             </tr>

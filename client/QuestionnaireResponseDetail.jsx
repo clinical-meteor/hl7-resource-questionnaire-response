@@ -1,5 +1,5 @@
 import { CardActions, CardText, RaisedButton, TextField } from 'material-ui';
-import { get } from 'lodash';
+import { get, find } from 'lodash';
 
 import { Bert } from 'meteor/clinical:alert';
 import React from 'react';
@@ -7,11 +7,10 @@ import { ReactMeteorData } from 'meteor/react-meteor-data';
 import ReactMixin from 'react-mixin';
 
 import { Session } from 'meteor/session';
+import { copyFileSync } from 'fs';
 
 
-let defaultQuestionnaireResponse = {
-  "resourceType" : "QuestionnaireResponse"
-};
+
 
 Session.setDefault('questionnaireResponseUpsert', false);
 Session.setDefault('selectedQuestionnaireResponse', false);
@@ -20,28 +19,18 @@ export class QuestionnaireResponseDetail extends React.Component {
   getMeteorData() {
     let data = {
       questionnaireResponseId: false,
-      questionnaireResponse: defaultQuestionnaireResponse
+      questionnaireResponse: null,
+      originalQuestionnaire: null,
+      originalQuestionnaireId: false
     };
 
-    if (Session.get('questionnaireResponseUpsert')) {
-      data.questionnaireResponse = Session.get('questionnaireResponseUpsert');
-    } else {
-      if (Session.get('selectedQuestionnaireResponse')) {
-        data.questionnaireResponseId = Session.get('selectedQuestionnaireResponse');
-        console.log("selectedQuestionnaireResponse", Session.get('selectedQuestionnaireResponse'));
+    if(this.props.currentQuestionnaireResponse){
+      data.questionnaireResponse = this.props.currentQuestionnaireResponse;
 
-        let selectedQuestionnaireResponse = QuestionnaireResponses.findOne({_id: Session.get('selectedQuestionnaireResponse')});
-        console.log("selectedQuestionnaireResponse", selectedQuestionnaireResponse);
-
-        if (selectedQuestionnaireResponse) {
-          data.questionnaireResponse = selectedQuestionnaireResponse;
-
-          if (typeof selectedQuestionnaireResponse.birthDate === "object") {
-            data.questionnaireResponse.birthDate = moment(selectedQuestionnaireResponse.birthDate).add(1, 'day').format("YYYY-MM-DD");
-          }
-        }
-      } else {
-        data.questionnaireResponse = defaultQuestionnaireResponse;
+      if(get(this, 'props.currentQuestionnaireResponse.questionnaire.reference')){
+        data.originalQuestionnaireId = get(this, 'props.currentQuestionnaireResponse.questionnaire.reference');
+        data.originalQuestionnaireId = data.originalQuestionnaireId.split('/')[1];
+        data.originalQuestionnaire = Questionnaires.findOne({id: data.originalQuestionnaireId});
       }
     }
 
@@ -50,57 +39,33 @@ export class QuestionnaireResponseDetail extends React.Component {
   }
 
   render() {
+
+    console.log('QuestionnaireResponseDetail.this.data', this.data);
+
+    let inputs = [];    
+    let items = get(this, 'data.questionnaireResponse.item', []);
+
+    console.log('QuestionnaireResponseDetail.items', items);
+
+    items.forEach(function(item){
+      console.log('item', item)
+      console.log('item.linkId', item.linkId)
+
+      inputs.push(<TextField
+        id={ get(item, 'linkId') + '_question'}
+        key={ get(item, 'linkId') + '_key'}
+        name={ get(item, 'linkId') + '_name'}
+        value={ get(item, 'answer[0].valueCoding.code', '')}
+        floatingLabelText={ get(item, 'text') + '_key'}
+        //onChange={ this.changeState.bind(this, 'name')}
+        fullWidth
+      />)        
+  })
+    
     return (
-      <div id={this.props.id} className="questionnaireResponseDetail">
+      <div id={this.props.id} key={this.props.id} className="questionnaireResponseDetail">
         <CardText>
-          {/* <TextField
-            id='nameInput'
-            ref='name'
-            name='name'
-            floatingLabelText='name'
-            value={ get(this, 'data.questionnaireResponse.name[0].text', '')}
-            onChange={ this.changeState.bind(this, 'name')}
-            fullWidth
-            /><br/>
-          <TextField
-            id='genderInput'
-            ref='gender'
-            name='gender'
-            floatingLabelText='gender'
-            hintText='male | female | other | indeterminate | unknown'
-            value={ get(this, 'data.questionnaireResponse.gender', '')}
-            onChange={ this.changeState.bind(this, 'gender')}
-            fullWidth
-            /><br/>
-          <TextField
-            id='birthdateInput'
-            ref='birthdate'
-            name='birthdate'
-            floatingLabelText='birthdate'
-            hintText='YYYY-MM-DD'
-            value={ get(this, 'data.questionnaireResponse.birthDate', '')}
-            onChange={ this.changeState.bind(this, 'birthDate')}
-            fullWidth
-            /><br/>
-          <TextField
-            id='photoInput'
-            ref='photo'
-            name='photo'
-            floatingLabelText='photo'
-            value={ get(this, 'data.questionnaireResponse.photo[0].url', '')}
-            onChange={ this.changeState.bind(this, 'photo')}
-            floatingLabelFixed={false}
-            fullWidth
-            /><br/>
-          <TextField
-            id='mrnInput'
-            ref='mrn'
-            name='mrn'
-            floatingLabelText='medical record number'
-            value={ get(this, 'data.questionnaireResponse.identifier[0].value', '')}
-            onChange={ this.changeState.bind(this, 'mrn')}
-            fullWidth
-            /><br/> */}
+          { inputs }
         </CardText>
         <CardActions>
           { this.determineButtons(this.data.questionnaireResponseId) }
@@ -124,47 +89,7 @@ export class QuestionnaireResponseDetail extends React.Component {
   }
 
   changeState(field, event, value){
-    let questionnaireResponseUpdate;
-
-    if(process.env.TRACE) console.log("questionnaireResponseDetail.changeState", field, event, value);
-
-    // by default, assume there's no other data and we're creating a new questionnaireResponse
-    if (Session.get('questionnaireResponseUpsert')) {
-      questionnaireResponseUpdate = Session.get('questionnaireResponseUpsert');
-    } else {
-      questionnaireResponseUpdate = defaultQuestionnaireResponse;
-    }
-
-
-
-    // if there's an existing questionnaireResponse, use them
-    if (Session.get('selectedQuestionnaireResponse')) {
-      questionnaireResponseUpdate = this.data.questionnaireResponse;
-    }
-
-    switch (field) {
-      case "name":
-        questionnaireResponseUpdate.name[0].text = value;
-        break;
-      case "gender":
-        questionnaireResponseUpdate.gender = value.toLowerCase();
-        break;
-      case "birthDate":
-        questionnaireResponseUpdate.birthDate = value;
-        break;
-      case "photo":
-        questionnaireResponseUpdate.photo[0].url = value;
-        break;
-      case "mrn":
-        questionnaireResponseUpdate.identifier[0].value = value;
-        break;
-      default:
-
-    }
-    // questionnaireResponseUpdate[field] = value;
-    process.env.TRACE && console.log("questionnaireResponseUpdate", questionnaireResponseUpdate);
-
-    Session.set('questionnaireResponseUpsert', questionnaireResponseUpdate);
+    console.log("questionnaireResponseDetail.changeState", field, event, value);
   }
 
 
