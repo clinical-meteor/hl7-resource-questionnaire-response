@@ -1,6 +1,6 @@
 import { CardText, CardTitle } from 'material-ui';
 import { Tab, Tabs } from 'material-ui/Tabs';
-import { Glass, GlassCard, VerticalCanvas } from 'meteor/clinical:glass-ui';
+import { Glass, GlassCard, VerticalCanvas, FullPageCanvas } from 'meteor/clinical:glass-ui';
 
 import QuestionnaireResponseDetail from './QuestionnaireResponseDetail';
 import QuestionnaireResponseTable from './QuestionnaireResponseTable';
@@ -72,7 +72,7 @@ export class QuestionnaireResponsesPage extends React.Component {
     // console.log('React.version: ' + React.version);
     return (
       <div id="questionnaireResponsesPage">
-        <VerticalCanvas>
+        <FullPageCanvas>
           <GlassCard height="auto">
             <CardTitle
               title="Questionnaire Responses"
@@ -86,10 +86,14 @@ export class QuestionnaireResponsesPage extends React.Component {
                    <QuestionnaireResponseTable 
                     showBarcodes={true} 
                     showAvatars={true} 
-                    onRowClick={function(responseId){
+                    onCellClick={function(responseId){
                       console.log('responseId', responseId)
                       Session.set('selectedQuestionnaireResponse', responseId)
                       Session.set('questionnaireResponsePageTabIndex', 2)
+                    }}
+                    onRemoveRecord={function(responseId){
+                      console.log('onRemoveRecord()')
+                      QuestionnaireResponses.remove({_id: responseId});                      
                     }}
                     />
                  </Tab>
@@ -103,7 +107,7 @@ export class QuestionnaireResponsesPage extends React.Component {
 
             </CardText>
           </GlassCard>
-        </VerticalCanvas>
+        </FullPageCanvas>
       </div>
     );
   }

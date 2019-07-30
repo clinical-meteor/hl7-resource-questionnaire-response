@@ -1,6 +1,6 @@
 Package.describe({
   name: 'clinical:hl7-resource-questionnaire-response',
-  version: '1.4.4',
+  version: '1.4.7',
   summary: 'HL7 FHIR Resource - Questionnaire Response',
   git: 'https://github.com/clinical-meteor/hl7-resource-questionnaire-response',
   documentation: 'README.md'
